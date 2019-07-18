@@ -151,8 +151,8 @@ def colisionBalasEnemigos():
                     mensaje = "Morire cuando muera!!! ...... mori T_T"
                     fin_juego=True
 
-def corte(archivo,an_i,al_i):
-    imagen=pygame.image.load(archivo)
+def corte(archivo,an_i,al_i,scale=1):
+    imagen=pygame.transform.scale(pygame.image.load(archivo), (pygame.image.load(archivo).get_width()*scale, pygame.image.load(archivo).get_height()*scale))
     info= imagen.get_rect()
     ian=info[2]
     ial=info[3]
@@ -342,6 +342,55 @@ class Enemigo3(pygame.sprite.Sprite):
                 self.rect.bottom=ALTO
                 self.vely=0
 
+
+class Boss(pygame.sprite.Sprite):
+    def __init__(self, p, cl=BLANCO):
+        pygame.sprite.Sprite.__init__(self)
+        self.uno = corte('boss_1.png', 4,1,3)
+        self.dos = corte('boss_0.png', 4,1,3)
+        self.image = self.uno[0][0][0]
+        self.rect=self.image.get_rect()
+        self.rect.x=p[0]
+        self.rect.y=p[1]
+        self.sig = 0
+        self.vely = 0
+        self.velx = 0
+        self.siguiente = "p"
+        self.plataformas=None
+        self.vidas = 3
+
+    def update(self):
+        if self.siguiente == "p":
+            self.image = self.uno[0][0][0+self.sig]
+        else:
+            self.image = self.dos[0][0][0+self.sig]
+
+        self.sig = self.sig + 1
+        if self.sig == 4:
+            self.sig = 0
+
+        
+
+
+        ########## colision con  la plataforma ######
+        ls_col=pygame.sprite.spritecollide(self,self.plataformas,False)
+        if len(ls_col) == 0:
+            self.rect.x += (self.velx * 2)
+
+        else:
+            for p in ls_col:
+                if self.rect.top < p.rect.bottom and self.vely < 0:
+                    self.rect.top = p.rect.bottom + 10
+                    self.vely = 0
+                if self.rect.bottom > p.rect.top and self.vely > 0:
+                    self.rect.bottom = p.rect.top + 10
+                    self.vely = 0
+
+            if self.rect.bottom > ALTO:
+                self.rect.bottom=ALTO
+                self.vely=0
+
+
 class Bala(pygame.sprite.Sprite):
     def __init__(self, p, cl=BLANCO):
         bala=pygame.image.load('bullet.png')
@@ -493,21 +542,27 @@ if __name__ == '__main__':
     j.plataformas=plataformas
 
     enemigos1 = pygame.sprite.Group()
-    enemigo1 = Enemigo1([1600,100])
+    enemigo1 = Enemigo1([160000,100])
     enemigos1.add(enemigo1)
     enemigo1.plataformas = plataformas
 
 
     enemigos2 = pygame.sprite.Group()
-    enemigo2 = Enemigo2([800,100])
+    enemigo2 = Enemigo2([800000,100])
     enemigos2.add(enemigo2)
     enemigo2.plataformas = plataformas
 
 
     enemigos3 = pygame.sprite.Group()
-    enemigo3 = Enemigo3([2000,ALTO - 100])
+    enemigo3 = Enemigo3([20000,ALTO - 100])
     enemigos3.add(enemigo3)
     enemigo3.plataformas = plataformas
+
+
+    bosses = pygame.sprite.Group()
+    boss = Boss([500,ALTO-220])
+    bosses.add(boss)
+    boss.plataformas = plataformas
 
 
     reloj=pygame.time.Clock()
@@ -532,16 +587,19 @@ if __name__ == '__main__':
             if not estanCerca(enemigo3,j,600):
                 enemigo3.rect.x+=-j.velx
 
+            if not estanCerca(boss,j,800):
+                boss.rect.x+=-j.velx
+
 
             if estanCerca(enemigo1,j) and (cont % 80) == 0:
                 b=Bala([enemigo1.rect.x, enemigo1.rect.y])
                 b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
                 if j.rect.x < enemigo1.rect.x:
                     b.velx = -4
-                    enemigo1.siguiente = "p"
+                    enemigo1.siguiente = "s"
                 else:
                     b.velx = 4
-                    enemigo1.siguiente = "s"
+                    enemigo1.siguiente = "p"
                 balasEnemigo1.add(b)
 
             if estanCerca(enemigo2,j,600) and (cont % 80) == 0:
@@ -568,6 +626,14 @@ if __name__ == '__main__':
                     enemigo3.siguiente = "s"
                 enemigo3.velx = -j.velx
                 balasEnemigo1.add(b)
+
+
+            if estanCerca(boss,j,600) and (cont % 80) == 0:
+                if j.rect.x < boss.rect.x:
+                    boss.siguiente = "s"
+                else:
+                    boss.siguiente = "p"
+                boss.velx = -j.velx
 
         colisionBalasEnemigos()
 
@@ -605,6 +671,12 @@ if __name__ == '__main__':
             enemigos3.update()
 
         enemigos3.draw(pantalla)
+
+
+        if (cont % 6) == 0:
+            bosses.update()
+
+        bosses.draw(pantalla)
         
         
         mostrarMensajes()
