@@ -22,11 +22,17 @@ def eventos(event):
     if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_RIGHT:
             j.siguiente = "d"
-            j.velx=10
+            if j.velocidad:
+                j.velx= 20
+            else:
+                j.velx=10
             j.vely=0
         if event.key == pygame.K_LEFT:
             j.siguiente = "i"
-            j.velx = -10
+            if j.velocidad:
+                j.velx= -20
+            else:
+                j.velx=-10
             j.vely=0
         if event.key == pygame.K_UP:
             j.vely = -10
@@ -130,6 +136,12 @@ def colisionBalasEnemigos():
         for e in ls:
             modificadores1.remove(m)
             j.poder = True
+
+    for m in modificadores2:
+        ls=pygame.sprite.spritecollide(m,jugadores,False)
+        for e in ls:
+            modificadores2.remove(m)
+            j.velocidad = True
 
     for b in balas:
         ls=pygame.sprite.spritecollide(b,enemigos1,True)
@@ -503,6 +515,8 @@ class Jugador (pygame.sprite.Sprite):
         self.plataformas=None
         self.bum=pygame.mixer.Sound('bum.wav')
         self.poder = False
+        self.velocidad = False
+
         
     def gravedad(self, cte=2):
         if self.vely == 0:
@@ -584,6 +598,7 @@ if __name__ == '__main__':
     reloj = pygame.time.Clock()
 
     contadorPder1 = 0
+    contadorPder2 = 0
     pos_y1=300
     vel_y=-5
 
@@ -673,6 +688,15 @@ if __name__ == '__main__':
     modificador1.rect.y= ALTO - 70
     modificadores1.add(modificador1)
 
+
+    modificadores2 = pygame.sprite.Group()
+    modificador2 = Modificador()
+    modificador2.image = pygame.transform.scale(pygame.image.load('poder2.png'), (60, 60))
+    modificador2.rect=modificador2.image.get_rect()
+    modificador2.rect.x= random.randrange(100, 500)
+    modificador2.rect.y= ALTO - 70
+    modificadores2.add(modificador2)
+
     reloj=pygame.time.Clock()
     fin=False
     fin_juego = False
@@ -691,6 +715,7 @@ if __name__ == '__main__':
                 p.rect.x+=-j.velx
 
             modificador1.rect.x += -j.velx
+            modificador2.rect.x += -j.velx
 
             if not estanCerca(enemigo1,j,600):
                 enemigo1.rect.x+=-j.velx
@@ -809,6 +834,7 @@ if __name__ == '__main__':
         
 
         modificadores1.draw(pantalla)
+        modificadores2.draw(pantalla)
 
         mostrarMensajes()
 
@@ -823,6 +849,13 @@ if __name__ == '__main__':
 
         if contadorPder1 == 1199:
             j.poder = False
+
+
+        if j.velocidad:
+            contadorPder2+=1
+
+        if contadorPder2 == 1199:
+            j.velocidad = False
 
     if boss_murio:
         pantalla.fill(NEGRO)
