@@ -135,6 +135,42 @@ def colisionBalasEnemigos():
         if b.rect.x < -20:
             balas.remove(b)
 
+    for b in balas:
+        ls=pygame.sprite.spritecollide(b,enemigos2,True)
+        for e in ls:
+            balas.remove(b)
+            enemigo2.vidas-=1
+            if enemigo2.vidas == 0:
+                enemigos2.remove(enemigo2)
+                mensaje = "moriras en de hambre devilucho!!"
+        if b.rect.x < -20:
+            balas.remove(b)
+
+
+    for b in balas:
+        ls=pygame.sprite.spritecollide(b,enemigos3,True)
+        for e in ls:
+            balas.remove(b)
+            enemigo3.vidas-=1
+            if enemigo3.vidas == 0:
+                enemigos3.remove(enemigo3)
+                mensaje = "por las barbas de odin!!!"
+        if b.rect.x < -20:
+            balas.remove(b)
+
+
+    for b in balas:
+        ls=pygame.sprite.spritecollide(b,bosses,True)
+        for e in ls:
+            balas.remove(b)
+            boss.vidas-=1
+            if boss.vidas == 0:
+                bosses.remove(boss)
+                mensaje = "por las barbas de odin!!!"
+        if b.rect.x < -20:
+            balas.remove(b)
+
+
     for b in balasEnemigo1:
         ls=pygame.sprite.spritecollide(b,jugadores,True)
         if len(ls) != 0:
@@ -348,8 +384,6 @@ class Boss(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.uno = corte('boss_1.png', 4,1,3)
         self.dos = corte('boss_0.png', 4,1,3)
-        self.tres = corte('boss1_1.png', 4,1,3)
-        self.cuatro = corte('boss1_0.png', 4,1,3)
         self.image = self.uno[0][0][0]
         self.rect=self.image.get_rect()
         self.rect.x=p[0]
@@ -367,16 +401,9 @@ class Boss(pygame.sprite.Sprite):
         if self.siguiente == "s":
             self.image = self.dos[0][0][0+self.sig]
 
-
-        if self.siguiente == "t":
-            self.image = self.tres[0][0][0+self.sig]
-        if self.siguiente == "r":
-            self.image = self.cuatro[0][0][0+self.sig]
-
         self.sig = self.sig + 1
         if self.sig == 4:
             self.sig = 0
-
         
 
 
@@ -384,6 +411,7 @@ class Boss(pygame.sprite.Sprite):
         ls_col=pygame.sprite.spritecollide(self,self.plataformas,False)
         if len(ls_col) == 0:
             self.rect.x += (self.velx * 2)
+            print(self.rect.x)
 
         else:
             for p in ls_col:
@@ -576,6 +604,7 @@ if __name__ == '__main__':
     reloj=pygame.time.Clock()
     fin=False
     fin_juego = False
+    mensaje_boss = False
     cont = 0
 
     mensaje = ""
@@ -637,10 +666,15 @@ if __name__ == '__main__':
 
 
             if estanCerca(boss,j,600) and (cont % 80) == 0:
+                if not mensaje_boss:
+                    mensaje = "Moriras devilucho"
+                    mensaje_boss = True
                 if j.rect.x < boss.rect.x:
-                    boss.siguiente = "r"
+                    boss.siguiente = "s"
+                    boss.velx = - 7
                 else:
-                    boss.siguiente = "t"
+                    boss.siguiente = "p"
+                    boss.velx = 7
                 boss.velx = -j.velx
 
         colisionBalasEnemigos()
