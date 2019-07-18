@@ -348,6 +348,8 @@ class Boss(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.uno = corte('boss_1.png', 4,1,3)
         self.dos = corte('boss_0.png', 4,1,3)
+        self.tres = corte('boss1_1.png', 4,1,3)
+        self.cuatro = corte('boss1_0.png', 4,1,3)
         self.image = self.uno[0][0][0]
         self.rect=self.image.get_rect()
         self.rect.x=p[0]
@@ -362,8 +364,14 @@ class Boss(pygame.sprite.Sprite):
     def update(self):
         if self.siguiente == "p":
             self.image = self.uno[0][0][0+self.sig]
-        else:
+        if self.siguiente == "s":
             self.image = self.dos[0][0][0+self.sig]
+
+
+        if self.siguiente == "t":
+            self.image = self.tres[0][0][0+self.sig]
+        if self.siguiente == "r":
+            self.image = self.cuatro[0][0][0+self.sig]
 
         self.sig = self.sig + 1
         if self.sig == 4:
@@ -630,9 +638,9 @@ if __name__ == '__main__':
 
             if estanCerca(boss,j,600) and (cont % 80) == 0:
                 if j.rect.x < boss.rect.x:
-                    boss.siguiente = "s"
+                    boss.siguiente = "r"
                 else:
-                    boss.siguiente = "p"
+                    boss.siguiente = "t"
                 boss.velx = -j.velx
 
         colisionBalasEnemigos()
