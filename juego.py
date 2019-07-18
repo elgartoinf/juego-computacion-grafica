@@ -125,6 +125,12 @@ def colisionBalasEnemigos():
                     mensaje = "Morire cuando muera!!! ...... mori T_T"
                     fin_juego=True
 
+    for m in modificadores1:
+        ls=pygame.sprite.spritecollide(m,jugadores,False)
+        for e in ls:
+            modificadores1.remove(m)
+            j.poder = True
+
     for b in balas:
         ls=pygame.sprite.spritecollide(b,enemigos1,True)
         for e in ls:
@@ -440,6 +446,13 @@ class Bala(pygame.sprite.Sprite):
     def update(self):
         self.rect.x += self.velx
 
+
+class Modificador(pygame.sprite.Sprite):
+    def __init__(self):
+        bala=pygame.image.load('bullet.png')
+        pygame.sprite.Sprite.__init__(self)
+
+
 class Bloque (pygame.sprite.Sprite):
     def __init__(self, p, dims):
         pygame.sprite.Sprite.__init__(self)
@@ -472,6 +485,7 @@ class Jugador (pygame.sprite.Sprite):
         self.sig = 0
         self.plataformas=None
         self.bum=pygame.mixer.Sound('bum.wav')
+        self.poder = False
         
     def gravedad(self, cte=0.5):
         if self.vely == 0:
@@ -480,15 +494,24 @@ class Jugador (pygame.sprite.Sprite):
             self.vely += cte
 
     def update(self):
-
-        if self.siguiente == "d":
-            self.image = self.m[0][0][0+self.sig]
-        if self.siguiente == "i":
-            self.image = self.m[0][1][0+self.sig]
-        if self.siguiente == "a":
-            self.image = self.m[0][0][0+self.sig]
-        if self.siguiente == "b":
-            self.image = self.m[0][0][0+self.sig]
+        if not self.poder:
+            if self.siguiente == "d":
+                self.image = self.m[0][0][0+self.sig]
+            if self.siguiente == "i":
+                self.image = self.m[0][1][0+self.sig]
+            if self.siguiente == "a":
+                self.image = self.m[0][0][0+self.sig]
+            if self.siguiente == "b":
+                self.image = self.m[0][0][0+self.sig]
+        else:
+            if self.siguiente == "d":
+                self.image = pygame.transform.scale(self.m[0][0][0+self.sig], (int(self.m[0][0][0+self.sig].get_width()*0.5), int(self.m[0][0][0+self.sig].get_width()*0.5)))
+            if self.siguiente == "i":
+                self.image = pygame.transform.scale(self.m[0][1][0+self.sig], (int(self.m[0][1][0+self.sig].get_width()*0.5), int(self.m[0][1][0+self.sig].get_width()*0.5)))
+            if self.siguiente == "a":
+                self.image = pygame.transform.scale(self.m[0][0][0+self.sig], (int(self.m[0][0][0+self.sig].get_width()*0.5), int(self.m[0][0][0+self.sig].get_width()*0.5)))
+            if self.siguiente == "b":
+                self.image = pygame.transform.scale(self.m[0][0][0+self.sig], (int(self.m[0][0][0+self.sig].get_width()*0.5), int(self.m[0][0][0+self.sig].get_width()*0.5)))
 
 
         self.sig = self.sig + 1
@@ -533,7 +556,7 @@ if __name__ == '__main__':
 
     reloj = pygame.time.Clock()
 
-
+    contadorPder1 = 0
     pos_y1=300
     vel_y=-5
 
@@ -612,6 +635,15 @@ if __name__ == '__main__':
     vidaboss = VidaBoss([0,ALTO-10],[ANCHO,10])
     vidabosses.add(vidaboss)
 
+
+    modificadores1 = pygame.sprite.Group()
+    modificador1 = Modificador()
+    modificador1.image = pygame.transform.scale(pygame.image.load('poder1.png'), (60, 60))
+    modificador1.rect=modificador1.image.get_rect()
+    modificador1.rect.x= random.randrange(900, 1200)
+    modificador1.rect.y= ALTO - 70
+    modificadores1.add(modificador1)
+
     reloj=pygame.time.Clock()
     fin=False
     fin_juego = False
@@ -629,6 +661,7 @@ if __name__ == '__main__':
             for p in plataformas:
                 p.rect.x+=-j.velx
             enemigo1.rect.x+=-j.velx
+            modificador1.rect.x += -j.velx
 
             if not estanCerca(enemigo2,j,600):
                 enemigo2.rect.x+=-j.velx
@@ -736,6 +769,8 @@ if __name__ == '__main__':
         vidabosses.draw(pantalla)
         
 
+        modificadores1.draw(pantalla)
+
         mostrarMensajes()
 
         pygame.display.flip()
@@ -744,6 +779,11 @@ if __name__ == '__main__':
         if cont == 120:
             cont = 0
 
+        if j.poder:
+            contadorPder1+=1
+
+        if contadorPder1 == 1199:
+            j.poder = False
 
     if boss_murio:
         pantalla.fill(NEGRO)
