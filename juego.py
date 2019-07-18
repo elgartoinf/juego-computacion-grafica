@@ -167,17 +167,18 @@ def colisionBalasEnemigos():
 
 
     for b in balas:
-        ls=pygame.sprite.spritecollide(b,bosses,False)
-        for e in ls:
-            balas.remove(b)
-            boss.vidas-=1
-            if boss.vidas == 0:
-                bosses.remove(boss)
-                mensaje = "por las barbas de odin mori!!!!"
-                boss_murio = True
-                fin_juego = True
-        if b.rect.x < -20:
-            balas.remove(b)
+        if estanCerca(boss,j,600):
+            ls=pygame.sprite.spritecollide(b,bosses,False)
+            for e in ls:
+                balas.remove(b)
+                boss.vidas-=1
+                if boss.vidas == 0:
+                    bosses.remove(boss)
+                    mensaje = "por las barbas de odin mori!!!!"
+                    boss_murio = True
+                    fin_juego = True
+            if b.rect.x < -20:
+                balas.remove(b)
 
 
     for b in balasEnemigo1:
@@ -195,6 +196,22 @@ def colisionBalasEnemigos():
                 else:
                     mensaje = "Morire cuando muera!!! ...... mori T_T"
                     fin_juego=True
+
+
+        for b in bosses:
+            ls=pygame.sprite.spritecollide(b,jugadores,True)
+            if len(ls) != 0:
+                for jjugador in ls:
+                    vidas = j.vidas - 1
+                    if vidas > 0:
+                        j=Jugador([0,ALTO-120])
+                        j.vidas = vidas
+                        j.plataformas = plataformas
+                        jugadores.add(j)
+                        mensaje = "no detendras mi furia!!!!"
+                    else:
+                        mensaje = "Morire cuando muera!!! ...... mori T_T"
+                        fin_juego=True
 
 def corte(archivo,an_i,al_i,scale=1):
     imagen=pygame.transform.scale(pygame.image.load(archivo), (pygame.image.load(archivo).get_width()*scale, pygame.image.load(archivo).get_height()*scale))
@@ -487,7 +504,7 @@ class Jugador (pygame.sprite.Sprite):
         self.bum=pygame.mixer.Sound('bum.wav')
         self.poder = False
         
-    def gravedad(self, cte=0.5):
+    def gravedad(self, cte=2):
         if self.vely == 0:
             self.vely = 1
         else:
@@ -542,9 +559,19 @@ class Jugador (pygame.sprite.Sprite):
                 self.rect.bottom = p.rect.top + 10
                 self.vely = 0
 
-        if self.rect.bottom > ALTO:
-            self.rect.bottom=ALTO
-            self.vely=0
+
+        if self.poder and self.vely != 0:
+            if (self.rect.bottom - 60) < ALTO:
+                self.rect.y += self.vely
+            else:
+                self.vely = 0
+        else:
+            if self.rect.bottom < ALTO:
+                self.rect.y += self.vely
+            else:
+                self.vely = 0 
+
+
 
         self.gravedad()
 
@@ -573,9 +600,10 @@ if __name__ == '__main__':
         texto2= pygame.font.Font(None, 32).render('y me comere tus huesos porque no tienes carne flacucha(o)', True, ROJO)
         texto1=pygame.font.Font(None, 32).render('Jugador: Te matare y comere ensalada de frutas', True,BLANCO)
         texto3= pygame.font.Font(None, 32).render('Jefe de nivel: Primero tendras matar a mis compinches Bujajajajaja!!', True, ROJO)
+        texto4=pygame.font.Font(None, 32).render('Jugador: este desierto se esta hundiendo!!!', True,BLANCO)
 
 
-        if pos_y1+200 < 0:
+        if pos_y1+250 < 0:
             fin_mostrar=True
 
         pantalla.fill(NEGRO)
@@ -584,6 +612,7 @@ if __name__ == '__main__':
         pantalla.blit(texto2,[0,pos_y1+100])
         pantalla.blit(texto1,[0,pos_y1+150])
         pantalla.blit(texto3,[0,pos_y1+200])
+        pantalla.blit(texto4,[0,pos_y1+250])
         pygame.display.flip()
         reloj.tick(10)
         pos_y1+=vel_y
@@ -609,19 +638,19 @@ if __name__ == '__main__':
     j.plataformas=plataformas
 
     enemigos1 = pygame.sprite.Group()
-    enemigo1 = Enemigo1([1600,100])
+    enemigo1 = Enemigo1([900,0])
     enemigos1.add(enemigo1)
     enemigo1.plataformas = plataformas
 
 
     enemigos2 = pygame.sprite.Group()
-    enemigo2 = Enemigo2([2500,100])
+    enemigo2 = Enemigo2([1500,0])
     enemigos2.add(enemigo2)
     enemigo2.plataformas = plataformas
 
 
     enemigos3 = pygame.sprite.Group()
-    enemigo3 = Enemigo3([3000,ALTO - 100])
+    enemigo3 = Enemigo3([800,ALTO - 100])
     enemigos3.add(enemigo3)
     enemigo3.plataformas = plataformas
 
@@ -660,8 +689,11 @@ if __name__ == '__main__':
         if j.rect.x <= (ANCHO-200) and j.rect.x >= 0:
             for p in plataformas:
                 p.rect.x+=-j.velx
-            enemigo1.rect.x+=-j.velx
+
             modificador1.rect.x += -j.velx
+
+            if not estanCerca(enemigo1,j,600):
+                enemigo1.rect.x+=-j.velx
 
             if not estanCerca(enemigo2,j,600):
                 enemigo2.rect.x+=-j.velx
@@ -669,45 +701,51 @@ if __name__ == '__main__':
             if not estanCerca(enemigo3,j,600):
                 enemigo3.rect.x+=-j.velx
 
-            if not estanCerca(boss,j,800):
+            if not estanCerca(boss,j,600):
                 boss.rect.x+=-j.velx
 
 
             if estanCerca(enemigo1,j) and (cont % 80) == 0:
-                b=Bala([enemigo1.rect.x, enemigo1.rect.y])
-                b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
-                if j.rect.x < enemigo1.rect.x:
-                    b.velx = -4
-                    enemigo1.siguiente = "s"
-                else:
-                    b.velx = 4
-                    enemigo1.siguiente = "p"
-                balasEnemigo1.add(b)
+                print("aparece 1")
+                if len(enemigos1) != 0:
+                    b=Bala([enemigo1.rect.x, enemigo1.rect.y])
+                    b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
+                    if j.rect.x < enemigo1.rect.x:
+                        b.velx = -4
+                        enemigo1.siguiente = "s"
+                    else:
+                        b.velx = 4
+                        enemigo1.siguiente = "p"
+                    balasEnemigo1.add(b)
 
             if estanCerca(enemigo2,j,600) and (cont % 80) == 0:
-                b=Bala([enemigo2.rect.x, enemigo2.rect.y])
-                b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
-                if j.rect.x < enemigo2.rect.x:
-                    b.velx = -4
-                    enemigo2.siguiente = "p"
-                else:
-                    b.velx = 4
-                    enemigo2.siguiente = "s"
-                enemigo2.velx = -j.velx
-                balasEnemigo1.add(b)
+                print("aparece 2")
+                if len(enemigos2) != 0:
+                    b=Bala([enemigo2.rect.x, enemigo2.rect.y])
+                    b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
+                    if j.rect.x < enemigo2.rect.x:
+                        b.velx = -4
+                        enemigo2.siguiente = "p"
+                    else:
+                        b.velx = 4
+                        enemigo2.siguiente = "s"
+                    enemigo2.velx = -j.velx
+                    balasEnemigo1.add(b)
 
 
             if estanCerca(enemigo3,j,600) and (cont % 80) == 0:
-                b=Bala([enemigo3.rect.x, enemigo3.rect.y])
-                b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
-                if j.rect.x < enemigo3.rect.x:
-                    b.velx = -4
-                    enemigo3.siguiente = "p"
-                else:
-                    b.velx = 4
-                    enemigo3.siguiente = "s"
-                enemigo3.velx = -j.velx
-                balasEnemigo1.add(b)
+                print("aparece 3")
+                if len(enemigos3) != 0:
+                    b=Bala([enemigo3.rect.x, enemigo3.rect.y])
+                    b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
+                    if j.rect.x < enemigo3.rect.x:
+                        b.velx = -4
+                        enemigo3.siguiente = "p"
+                    else:
+                        b.velx = 4
+                        enemigo3.siguiente = "s"
+                    enemigo3.velx = -j.velx
+                    balasEnemigo1.add(b)
 
 
             if estanCerca(boss,j,600) and (cont % 80) == 0:
@@ -765,8 +803,9 @@ if __name__ == '__main__':
 
         bosses.draw(pantalla)
         
-        vidaboss.update()
-        vidabosses.draw(pantalla)
+        if mensaje_boss:
+            vidaboss.update()
+            vidabosses.draw(pantalla)
         
 
         modificadores1.draw(pantalla)
