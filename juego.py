@@ -10,7 +10,7 @@ NEGRO=[0,0,0]
 
 backgroundPosX=0
 backgroundPosXSecond=0
-velX = 10
+velX = -10
 
 def corte(archivo,an_i,al_i):
     imagen=pygame.image.load(archivo)
@@ -38,13 +38,20 @@ def renderLetters(text="",posx=250,posy=250,size=32,color=BLANCO):
 def showInfinityBackground():
     global backgroundPosX
     fondo=pygame.image.load('background.png')
-    if backgroundPosX < ANCHO:
+    print(backgroundPosX)
+    if backgroundPosX >= 0:
+        if backgroundPosX < ANCHO:
+            backgroundPosX=backgroundPosX+velX
+            pantalla.blit(pygame.transform.scale(fondo, (ANCHO, ALTO)), (backgroundPosX, 0))
+            pantalla.blit(pygame.transform.scale(fondo, (ANCHO, ALTO)), (backgroundPosX-ANCHO, 0))
+        else:
+            backgroundPosX = 0
+    else:
+        if (-backgroundPosX) > ANCHO:
+            backgroundPosX = -1
         backgroundPosX=backgroundPosX+velX
         pantalla.blit(pygame.transform.scale(fondo, (ANCHO, ALTO)), (backgroundPosX, 0))
-        pantalla.blit(pygame.transform.scale(fondo, (ANCHO, ALTO)), (backgroundPosX-ANCHO, 0))
-        pygame.display.flip()
-    else:
-        backgroundPosX = 0
+        pantalla.blit(pygame.transform.scale(fondo, (ANCHO, ALTO)), (backgroundPosX+ANCHO, 0))
 
 
 class Jugador (pygame.sprite.Sprite):
@@ -99,7 +106,7 @@ if __name__ == '__main__':
 
     fin=False
     while not fin:
-
+        showInfinityBackground()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 fin=True
@@ -136,9 +143,8 @@ if __name__ == '__main__':
 
 
             velX = j.velx
-            jugadores.update()
+            #jugadores.update()
             jugadores.draw(pantalla)
-            pygame.display.flip()
-        showInfinityBackground()
+        
+        pygame.display.flip()
         #reloj.tick(20)
-
