@@ -1,5 +1,6 @@
 import pygame
 import random
+from pygame.math import Vector2
 
 ANCHO=800
 ALTO=400
@@ -11,6 +12,13 @@ NEGRO=[0,0,0]
 backgroundPosX=0
 backgroundPosXSecond=0
 velX = -10
+
+def estanCerca(uno, dos, radio=400):
+    if uno != dos:
+        distancia = Vector2(uno.rect.center).distance_to(dos.rect.center)
+        return distancia < radio
+    else:
+        return False
 
 def corte(archivo,an_i,al_i):
     imagen=pygame.image.load(archivo)
@@ -52,12 +60,75 @@ def showInfinityBackground():
         pantalla.blit(pygame.transform.scale(fondo, (ANCHO, ALTO)), (backgroundPosX, 0))
         pantalla.blit(pygame.transform.scale(fondo, (ANCHO, ALTO)), (backgroundPosX+ANCHO, 0))
 
+class Enemigo1(pygame.sprite.Sprite):
+    def __init__(self, p, cl=BLANCO):
+        pygame.sprite.Sprite.__init__(self)
+        self.uno = corte('enemigo1_0.png', 6,1)
+        self.dos = corte('enemigo1_1.png', 6,1)
+        self.image = self.uno[0][0][0]
+        self.rect=self.image.get_rect()
+        self.rect.x=p[0]
+        self.rect.y=p[1]
+        self.sig = 0
+        self.vely = 4
+        self.siguiente = "p"
+        self.plataformas=None
+
+    def update(self):
+        if self.siguiente == "p":
+            self.image = self.uno[0][0][0+self.sig]
+        else:
+            self.image = self.dos[0][0][0+self.sig]
+
+        self.sig = self.sig + 1
+        if self.sig == 5:
+            self.sig = 0
+
+        
+
+
+        ########## colision con  la plataforma ######
+        ls_col=pygame.sprite.spritecollide(self,self.plataformas,False)
+        if len(ls_col) == 0:
+            if self.rect.y > (ALTO-self.rect.height):
+                self.vely=-5
+            if self.rect.y < 0:
+                self.vely=5
+
+            self.rect.y += self.vely
+        else:
+            for p in ls_col:
+                if self.rect.top < p.rect.bottom and self.vely < 0:
+                    self.rect.top = p.rect.bottom + 10
+                    self.vely = 0
+                if self.rect.bottom > p.rect.top and self.vely > 0:
+                    self.rect.bottom = p.rect.top + 10
+                    self.vely = 0
+
+            if self.rect.bottom > ALTO:
+                self.rect.bottom=ALTO
+                self.vely=0
+
+
+
+class Bala(pygame.sprite.Sprite):
+    def __init__(self, p, cl=BLANCO):
+        bala=pygame.image.load('bullet.png')
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.transform.scale(bala, (40, 40))
+        self.rect=self.image.get_rect()
+        self.rect.x=p[0]
+        self.rect.y=p[1]
+        self.velx=0
+
+    def update(self):
+        self.rect.x += self.velx
 
 class Bloque (pygame.sprite.Sprite):
     def __init__(self, p, dims):
         pygame.sprite.Sprite.__init__(self)
         self.image=pygame.Surface(dims)
-        self.image.fill(VERDE)
+        self.image.fill(ROJO)
         self.rect=self.image.get_rect()
         self.rect.x=p[0]
         self.rect.y=p[1]
@@ -76,6 +147,7 @@ class Jugador (pygame.sprite.Sprite):
         self.siguiente = "d"
         self.sig = 0
         self.plataformas=None
+        self.bum=pygame.mixer.Sound('bum.wav')
         
     def gravedad(self, cte=0.5):
         if self.vely == 0:
@@ -102,15 +174,12 @@ class Jugador (pygame.sprite.Sprite):
 
         if self.velx != 0:
             if self.rect.x <= (ANCHO-200) and self.rect.x >= 0:
-                print(self.velx)
                 self.rect.x += self.velx
             else:
                 if self.rect.x >= 0:
                     self.rect.x -= 50
                 else:
                     self.rect.x += 50
-        
-
 
 
         self.rect.y += self.vely
@@ -145,12 +214,20 @@ if __name__ == '__main__':
 
     plataformas= pygame.sprite.Group()
 
-
     for i in range(0,10):        
         p=Bloque([random.randrange(100, ANCHO*10),random.randrange(100, 300)],[random.randrange(100, 200),20])
         plataformas.add(p)
 
+
+    balas = pygame.sprite.Group()
+
     j.plataformas=plataformas
+
+    enemigos1 = pygame.sprite.Group()
+    enemigo1 = Enemigo1([1500,100])
+    enemigos1.add(enemigo1)
+
+    enemigo1.plataformas = plataformas
 
     reloj=pygame.time.Clock()
     fin=False
@@ -166,10 +243,18 @@ if __name__ == '__main__':
                     j.vely=0
                 if event.key == pygame.K_LEFT:
                     j.siguiente = "i"
-                    j.velx= -10
+                    j.velx = -10
                     j.vely=0
+                if event.key == pygame.K_UP:
+                    j.vely = -10
                 if event.key == pygame.K_SPACE:
-                    j.vely= -10
+                    b=Bala([j.rect.x, j.rect.y])
+                    if j.siguiente == "i":
+                        b.velx = -4
+                    else:
+                        b.velx = 4
+                    j.bum.play()
+                    balas.add(b)
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_RIGHT:
                     j.velx=0
@@ -187,16 +272,38 @@ if __name__ == '__main__':
         if j.rect.x <= (ANCHO-200) and j.rect.x >= 0:
             for p in plataformas:
                 p.rect.x+=-j.velx
-                print(p.rect.x,j.velx)
+            enemigo1.rect.x+=-j.velx
+
+            if estanCerca(enemigo1,j) and (cont % 80) == 0:
+                b=Bala([enemigo1.rect.x, enemigo1.rect.y])
+                b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
+                if j.velx < 0:
+                    b.velx = 4
+                else:
+                    b.velx = -4
+                balas.add(b)
 
         velX = (j.velx/4)
         if (cont % 4) == 0:
             jugadores.update()
+
+        balas.update()
+
         showInfinityBackground()
+
+        balas.draw(pantalla)
+
         jugadores.draw(pantalla)
+
         plataformas.draw(pantalla)
+        
+        if (cont % 6) == 0:
+            enemigos1.update()
+
+        enemigos1.draw(pantalla)
+        
         pygame.display.flip()
 
         cont+=1
-        if cont == 60:
+        if cont == 120:
             cont = 0
