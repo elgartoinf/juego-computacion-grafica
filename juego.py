@@ -145,11 +145,10 @@ if __name__ == '__main__':
 
     plataformas= pygame.sprite.Group()
 
-    p=Bloque([150,100],[120,20])
-    plataformas.add(p)
 
-    p=Bloque([1300,200],[120,20])
-    plataformas.add(p)
+    for i in range(0,10):        
+        p=Bloque([random.randrange(100, ANCHO*10),random.randrange(100, 300)],[random.randrange(100, 200),20])
+        plataformas.add(p)
 
     j.plataformas=plataformas
 
@@ -187,7 +186,7 @@ if __name__ == '__main__':
 
         if j.rect.x <= (ANCHO-200) and j.rect.x >= 0:
             for p in plataformas:
-                p.rect.x+=j.velx
+                p.rect.x+=-j.velx
                 print(p.rect.x,j.velx)
 
         velX = (j.velx/4)
