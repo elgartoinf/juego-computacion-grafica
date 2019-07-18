@@ -209,6 +209,55 @@ class Enemigo1(pygame.sprite.Sprite):
                 self.rect.bottom=ALTO
                 self.vely=0
 
+class Enemigo2(pygame.sprite.Sprite):
+    def __init__(self, p, cl=BLANCO):
+        pygame.sprite.Sprite.__init__(self)
+        self.uno = corte('enemigo2_0.png', 6,1)
+        self.dos = corte('enemigo2_1.png', 6,1)
+        self.image = self.uno[0][0][0]
+        self.rect=self.image.get_rect()
+        self.rect.x=p[0]
+        self.rect.y=p[1]
+        self.sig = 0
+        self.vely = 4
+        self.siguiente = "p"
+        self.plataformas=None
+        self.vidas = 3
+
+    def update(self):
+        if self.siguiente == "p":
+            self.image = self.uno[0][0][0+self.sig]
+        else:
+            self.image = self.dos[0][0][0+self.sig]
+
+        self.sig = self.sig + 1
+        if self.sig == 5:
+            self.sig = 0
+
+        
+
+
+        ########## colision con  la plataforma ######
+        ls_col=pygame.sprite.spritecollide(self,self.plataformas,False)
+        if len(ls_col) == 0:
+            if self.rect.y > (ALTO-self.rect.height):
+                self.vely=-5
+            if self.rect.y < 0:
+                self.vely=5
+
+            self.rect.y += self.vely
+        else:
+            for p in ls_col:
+                if self.rect.top < p.rect.bottom and self.vely < 0:
+                    self.rect.top = p.rect.bottom + 10
+                    self.vely = 0
+                if self.rect.bottom > p.rect.top and self.vely > 0:
+                    self.rect.bottom = p.rect.top + 10
+                    self.vely = 0
+
+            if self.rect.bottom > ALTO:
+                self.rect.bottom=ALTO
+                self.vely=0
 
 
 class Bala(pygame.sprite.Sprite):
@@ -328,8 +377,14 @@ if __name__ == '__main__':
     enemigos1 = pygame.sprite.Group()
     enemigo1 = Enemigo1([1500,100])
     enemigos1.add(enemigo1)
-
     enemigo1.plataformas = plataformas
+
+
+    enemigos2 = pygame.sprite.Group()
+    enemigo2 = Enemigo2([100,100])
+    enemigos2.add(enemigo2)
+    enemigo2.plataformas = plataformas
+
 
     reloj=pygame.time.Clock()
     fin=False
@@ -350,10 +405,12 @@ if __name__ == '__main__':
             if estanCerca(enemigo1,j) and (cont % 80) == 0:
                 b=Bala([enemigo1.rect.x, enemigo1.rect.y])
                 b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
-                if j.velx < 0:
-                    b.velx = 4
-                else:
+                if j.rect.x < enemigo1.rect.x:
                     b.velx = -4
+                    enemigo1.siguiente = "p"
+                else:
+                    b.velx = 4
+                    enemigo1.siguiente = "s"
                 balasEnemigo1.add(b)
 
         colisionBalasEnemigo1()
@@ -372,7 +429,6 @@ if __name__ == '__main__':
 
         balasEnemigo1.update()
         balasEnemigo1.draw(pantalla)
-
         jugadores.draw(pantalla)
 
         plataformas.draw(pantalla)
@@ -381,6 +437,12 @@ if __name__ == '__main__':
             enemigos1.update()
 
         enemigos1.draw(pantalla)
+
+
+        if (cont % 6) == 0:
+            enemigos2.update()
+
+        enemigos2.draw(pantalla)
         
         
         mostrarMensajes()
