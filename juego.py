@@ -140,6 +140,7 @@ def colisionBalasEnemigos():
         if len(ls) != 0:
             for jjugador in ls:
                 vidas = j.vidas - 1
+                balasEnemigo1.remove(b)
                 if vidas > 0:
                     j=Jugador([0,ALTO-120])
                     j.vidas = vidas
@@ -444,7 +445,8 @@ if __name__ == '__main__':
     vel_y=-5
 
     fin = False
-    fin_mostrar = False
+    #TODO: cambiar
+    fin_mostrar = True
     while not fin and not fin_mostrar:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -491,19 +493,19 @@ if __name__ == '__main__':
     j.plataformas=plataformas
 
     enemigos1 = pygame.sprite.Group()
-    enemigo1 = Enemigo1([20000,100])
+    enemigo1 = Enemigo1([1600,100])
     enemigos1.add(enemigo1)
     enemigo1.plataformas = plataformas
 
 
     enemigos2 = pygame.sprite.Group()
-    enemigo2 = Enemigo2([900000,100])
+    enemigo2 = Enemigo2([800,100])
     enemigos2.add(enemigo2)
     enemigo2.plataformas = plataformas
 
 
     enemigos3 = pygame.sprite.Group()
-    enemigo3 = Enemigo3([500,ALTO - 100])
+    enemigo3 = Enemigo3([2000,ALTO - 100])
     enemigos3.add(enemigo3)
     enemigo3.plataformas = plataformas
 
