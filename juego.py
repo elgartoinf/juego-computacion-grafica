@@ -38,7 +38,6 @@ def renderLetters(text="",posx=250,posy=250,size=32,color=BLANCO):
 def showInfinityBackground():
     global backgroundPosX
     fondo=pygame.image.load('background.png')
-    print(backgroundPosX)
     if backgroundPosX >= 0:
         if backgroundPosX < ANCHO:
             backgroundPosX=backgroundPosX+velX
@@ -57,8 +56,6 @@ def showInfinityBackground():
 class Jugador (pygame.sprite.Sprite):
     def __init__(self, p):
         pygame.sprite.Sprite.__init__(self)
-        #self.image=pygame.Surface([40,50])
-        #self.image.fill(BLANCO)
         self.m = corte('personaje.png', 5,4)
         self.image = self.m[0][0][0]
         self.rect=self.image.get_rect()
@@ -86,10 +83,12 @@ class Jugador (pygame.sprite.Sprite):
         self.sig = self.sig + 1
         if self.sig == 2:
             self.sig = 0
+            
 
 
         if self.velx != 0:
-            self.rect.x += self.velx
+            if self.rect.x < (ANCHO/2+100):
+                self.rect.x += self.velx
         if self.vely != 0:
             self.rect.y += self.vely
 
@@ -100,13 +99,15 @@ if __name__ == '__main__':
     pantalla = pygame.display.set_mode([ANCHO,ALTO])
 
     jugadores = pygame.sprite.Group()
-    j=Jugador([100,100])
+    j=Jugador([0,ALTO-90])
     jugadores.add(j)    
-    #reloj=pygame.time.Clock()
+    reloj=pygame.time.Clock()
 
     fin=False
     while not fin:
-        showInfinityBackground()
+        contador = 0
+        segundos=contador//60
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 fin=True
@@ -142,9 +143,10 @@ if __name__ == '__main__':
                     j.vely=0
 
 
-            velX = j.velx
-            #jugadores.update()
-            jugadores.draw(pantalla)
-        
+        velX = (j.velx/2)
+        jugadores.update()
+        showInfinityBackground()
+        jugadores.draw(pantalla)
         pygame.display.flip()
-        #reloj.tick(20)
+        reloj.tick(segundos)
+        contador+=1
