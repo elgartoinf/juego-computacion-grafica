@@ -78,6 +78,7 @@ def colisionBalasEnemigos():
     global plataformas
     global fin_juego
     global mensaje
+    global boss_murio
 
     for r in enemigos1:
         ls=pygame.sprite.spritecollide(r,jugadores,True)
@@ -160,13 +161,15 @@ def colisionBalasEnemigos():
 
 
     for b in balas:
-        ls=pygame.sprite.spritecollide(b,bosses,True)
+        ls=pygame.sprite.spritecollide(b,bosses,False)
         for e in ls:
             balas.remove(b)
             boss.vidas-=1
             if boss.vidas == 0:
                 bosses.remove(boss)
-                mensaje = "por las barbas de odin!!!"
+                mensaje = "por las barbas de odin mori!!!!"
+                boss_murio = True
+                fin_juego = True
         if b.rect.x < -20:
             balas.remove(b)
 
@@ -378,7 +381,6 @@ class Enemigo3(pygame.sprite.Sprite):
                 self.rect.bottom=ALTO
                 self.vely=0
 
-
 class Boss(pygame.sprite.Sprite):
     def __init__(self, p, cl=BLANCO):
         pygame.sprite.Sprite.__init__(self)
@@ -393,7 +395,7 @@ class Boss(pygame.sprite.Sprite):
         self.velx = 0
         self.siguiente = "p"
         self.plataformas=None
-        self.vidas = 3
+        self.vidas = 20
 
     def update(self):
         if self.siguiente == "p":
@@ -411,7 +413,6 @@ class Boss(pygame.sprite.Sprite):
         ls_col=pygame.sprite.spritecollide(self,self.plataformas,False)
         if len(ls_col) == 0:
             self.rect.x += (self.velx * 2)
-            print(self.rect.x)
 
         else:
             for p in ls_col:
@@ -425,7 +426,6 @@ class Boss(pygame.sprite.Sprite):
             if self.rect.bottom > ALTO:
                 self.rect.bottom=ALTO
                 self.vely=0
-
 
 class Bala(pygame.sprite.Sprite):
     def __init__(self, p, cl=BLANCO):
@@ -443,11 +443,19 @@ class Bala(pygame.sprite.Sprite):
 class Bloque (pygame.sprite.Sprite):
     def __init__(self, p, dims):
         pygame.sprite.Sprite.__init__(self)
+        self.dims = dims
         self.image=pygame.Surface(dims)
         self.image.fill(ROJO)
         self.rect=self.image.get_rect()
         self.rect.x=p[0]
         self.rect.y=p[1]
+
+class VidaBoss(Bloque):
+    
+    def update(self):
+        self.image=pygame.Surface([int(self.dims[0]*(((boss.vidas*100)/20)/100)),self.dims[1]])
+        self.image.fill(AMARILLO)
+        self.rect=self.image.get_rect()
 
 class Jugador (pygame.sprite.Sprite):
     def __init__(self, p):
@@ -600,11 +608,15 @@ if __name__ == '__main__':
     bosses.add(boss)
     boss.plataformas = plataformas
 
+    vidabosses = pygame.sprite.Group()
+    vidaboss = VidaBoss([0,ALTO-10],[ANCHO,10])
+    vidabosses.add(vidaboss)
 
     reloj=pygame.time.Clock()
     fin=False
     fin_juego = False
     mensaje_boss = False
+    boss_murio = False
     cont = 0
 
     mensaje = ""
@@ -720,7 +732,10 @@ if __name__ == '__main__':
 
         bosses.draw(pantalla)
         
+        vidaboss.update()
+        vidabosses.draw(pantalla)
         
+
         mostrarMensajes()
 
         pygame.display.flip()
@@ -730,11 +745,17 @@ if __name__ == '__main__':
             cont = 0
 
 
-    ########### si fin del juego ############ 
-    pantalla.fill(NEGRO)
-    texto= pygame.font.Font(None, 50).render('Fin de juego', True, BLANCO)
-    pantalla.blit(texto, [(ANCHO/2-100),(ALTO/2-10)])
-    pygame.display.flip()
+    if boss_murio:
+        pantalla.fill(NEGRO)
+        texto= pygame.font.Font(None, 50).render('Ganaste!!! has adquirido el maximo de poder!', True, BLANCO)
+        pantalla.blit(texto, [10,(ALTO/2-10)])
+        pygame.display.flip() 
+    else:
+        ########### si fin del juego ############ 
+        pantalla.fill(NEGRO)
+        texto= pygame.font.Font(None, 50).render('Fin de juego', True, BLANCO)
+        pantalla.blit(texto, [(ANCHO/2-100),(ALTO/2-10)])
+        pygame.display.flip()
     
     fin=False
     while not fin:
