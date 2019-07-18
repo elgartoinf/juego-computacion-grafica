@@ -73,7 +73,7 @@ def mostrarMensajes():
     texto=pygame.font.Font(None, 25).render(vidasTexto, True, AMARILLO)
     pantalla.blit(texto,[10,20])
 
-def colisionBalasEnemigo1():
+def colisionBalasEnemigos():
     global j
     global plataformas
     global fin_juego
@@ -93,8 +93,24 @@ def colisionBalasEnemigo1():
                 else:
                     mensaje = "Morire cuando muera!!! ...... mori T_T"
                     fin_juego=True
+
+    for r in enemigos2:
+        ls=pygame.sprite.spritecollide(r,jugadores,True)
+        if len(ls) != 0:
+            for jjugador in ls:
+                vidas = j.vidas - 1
+                if vidas > 0:
+                    j=Jugador([0,ALTO-120])
+                    j.vidas = vidas
+                    j.plataformas = plataformas
+                    jugadores.add(j)
+                    mensaje = "no detendras mi furia!!!!"
+                else:
+                    mensaje = "Morire cuando muera!!! ...... mori T_T"
+                    fin_juego=True
+
     for b in balas:
-        ls=pygame.sprite.spritecollide(b,enemigos1,False)
+        ls=pygame.sprite.spritecollide(b,enemigos1,True)
         for e in ls:
             balas.remove(b)
             enemigo1.vidas-=1
@@ -220,6 +236,7 @@ class Enemigo2(pygame.sprite.Sprite):
         self.rect.y=p[1]
         self.sig = 0
         self.vely = 4
+        self.velx = 0
         self.siguiente = "p"
         self.plataformas=None
         self.vidas = 3
@@ -246,6 +263,9 @@ class Enemigo2(pygame.sprite.Sprite):
                 self.vely=5
 
             self.rect.y += self.vely
+
+            self.rect.x += self.velx
+
         else:
             for p in ls_col:
                 if self.rect.top < p.rect.bottom and self.vely < 0:
@@ -375,13 +395,13 @@ if __name__ == '__main__':
     j.plataformas=plataformas
 
     enemigos1 = pygame.sprite.Group()
-    enemigo1 = Enemigo1([1500,100])
+    enemigo1 = Enemigo1([20000,100])
     enemigos1.add(enemigo1)
     enemigo1.plataformas = plataformas
 
 
     enemigos2 = pygame.sprite.Group()
-    enemigo2 = Enemigo2([100,100])
+    enemigo2 = Enemigo2([900,100])
     enemigos2.add(enemigo2)
     enemigo2.plataformas = plataformas
 
@@ -402,6 +422,9 @@ if __name__ == '__main__':
                 p.rect.x+=-j.velx
             enemigo1.rect.x+=-j.velx
 
+            if not estanCerca(enemigo2,j,600):
+                enemigo2.rect.x+=-j.velx
+
             if estanCerca(enemigo1,j) and (cont % 80) == 0:
                 b=Bala([enemigo1.rect.x, enemigo1.rect.y])
                 b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
@@ -413,7 +436,19 @@ if __name__ == '__main__':
                     enemigo1.siguiente = "s"
                 balasEnemigo1.add(b)
 
-        colisionBalasEnemigo1()
+            if estanCerca(enemigo2,j,600) and (cont % 80) == 0:
+                b=Bala([enemigo2.rect.x, enemigo2.rect.y])
+                b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
+                if j.rect.x < enemigo2.rect.x:
+                    b.velx = -4
+                    enemigo2.siguiente = "p"
+                else:
+                    b.velx = 4
+                    enemigo2.siguiente = "s"
+                enemigo2.velx = -j.velx
+                balasEnemigo1.add(b)
+
+        colisionBalasEnemigos()
 
 
         velX = (j.velx/4)
