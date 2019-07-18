@@ -586,25 +586,25 @@ if __name__ == '__main__':
     j.plataformas=plataformas
 
     enemigos1 = pygame.sprite.Group()
-    enemigo1 = Enemigo1([160000,100])
+    enemigo1 = Enemigo1([1600,100])
     enemigos1.add(enemigo1)
     enemigo1.plataformas = plataformas
 
 
     enemigos2 = pygame.sprite.Group()
-    enemigo2 = Enemigo2([800000,100])
+    enemigo2 = Enemigo2([2500,100])
     enemigos2.add(enemigo2)
     enemigo2.plataformas = plataformas
 
 
     enemigos3 = pygame.sprite.Group()
-    enemigo3 = Enemigo3([20000,ALTO - 100])
+    enemigo3 = Enemigo3([3000,ALTO - 100])
     enemigos3.add(enemigo3)
     enemigo3.plataformas = plataformas
 
 
     bosses = pygame.sprite.Group()
-    boss = Boss([500,ALTO-220])
+    boss = Boss([3700,ALTO-220])
     bosses.add(boss)
     boss.plataformas = plataformas
 
