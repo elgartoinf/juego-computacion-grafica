@@ -437,6 +437,41 @@ if __name__ == '__main__':
     pygame.init()
     pantalla = pygame.display.set_mode([ANCHO,ALTO])
 
+    reloj = pygame.time.Clock()
+
+
+    pos_y1=300
+    vel_y=-5
+
+    fin = False
+    fin_mostrar = False
+    while not fin and not fin_mostrar:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                fin=True
+
+        texto0= pygame.font.Font(None, 32).render('En un principio el Jefe de nivel y el jugador pelearon por comida y honor.', True, ROJO)
+        texto= pygame.font.Font(None, 32).render('Jefe de nivel: Te matare devilucho!!!!!!', True, ROJO)
+        texto2= pygame.font.Font(None, 32).render('y me comere tus huesos porque no tienes carne flacucha(o)', True, ROJO)
+        texto1=pygame.font.Font(None, 32).render('Jugador: Te matare y comere ensalada de frutas', True,BLANCO)
+        texto3= pygame.font.Font(None, 32).render('Jefe de nivel: Primero tendras matar a mis compinches Bujajajajaja!!', True, ROJO)
+
+
+        if pos_y1+200 < 0:
+            fin_mostrar=True
+
+        pantalla.fill(NEGRO)
+        pantalla.blit(texto,[0,pos_y1])
+        pantalla.blit(texto0,[0,pos_y1+50])
+        pantalla.blit(texto2,[0,pos_y1+100])
+        pantalla.blit(texto1,[0,pos_y1+150])
+        pantalla.blit(texto3,[0,pos_y1+200])
+        pygame.display.flip()
+        reloj.tick(10)
+        pos_y1+=vel_y
+
+
+
     jugadores = pygame.sprite.Group()
 
     j=Jugador([0,ALTO-120])
