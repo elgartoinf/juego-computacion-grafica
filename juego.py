@@ -1,6 +1,8 @@
 import pygame
 import random
 from pygame.math import Vector2
+import time
+
 
 ANCHO=800
 ALTO=400
@@ -8,10 +10,47 @@ VERDE=[0,255,0]
 ROJO=[255,0,0]
 BLANCO=[255,255,255]
 NEGRO=[0,0,0]
+AMARILLO=[255,255,0]
 
 backgroundPosX=0
 backgroundPosXSecond=0
 velX = -10
+
+def eventos(event):
+    if event.type == pygame.QUIT:
+        fin=True
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_RIGHT:
+            j.siguiente = "d"
+            j.velx=10
+            j.vely=0
+        if event.key == pygame.K_LEFT:
+            j.siguiente = "i"
+            j.velx = -10
+            j.vely=0
+        if event.key == pygame.K_UP:
+            j.vely = -10
+        if event.key == pygame.K_SPACE:
+            b=Bala([j.rect.x, j.rect.y])
+            if j.siguiente == "i":
+                b.velx = -4
+            else:
+                b.velx = 4
+            j.bum.play()
+            balas.add(b)
+    if event.type == pygame.KEYUP:
+        if event.key == pygame.K_RIGHT:
+            j.velx=0
+            j.vely=0
+        if event.key == pygame.K_LEFT:
+            j.velx=0
+            j.vely=0
+        if event.key == pygame.K_UP:
+            j.velx=0
+            j.vely=0
+        if event.key == pygame.K_DOWN:
+            j.velx=0
+            j.vely=0
 
 def estanCerca(uno, dos, radio=400):
     if uno != dos:
@@ -19,6 +58,66 @@ def estanCerca(uno, dos, radio=400):
         return distancia < radio
     else:
         return False
+
+def mostrarMensajes():
+    global mensaje
+    if mensaje != "":
+        texto=pygame.font.Font(None, 25).render(mensaje, True, VERDE)
+        pantalla.blit(texto,[(ANCHO/2-100),(ALTO/2)])
+        pygame.display.flip()
+        time.sleep(3)
+        mensaje = ""
+
+    #vidas
+    vidasTexto= "vidas restantes: {}".format(j.vidas)
+    texto=pygame.font.Font(None, 25).render(vidasTexto, True, AMARILLO)
+    pantalla.blit(texto,[10,20])
+
+def colisionBalasEnemigo1():
+    global j
+    global plataformas
+    global fin_juego
+    global mensaje
+
+    for r in enemigos1:
+        ls=pygame.sprite.spritecollide(r,jugadores,True)
+        if len(ls) != 0:
+            for jjugador in ls:
+                vidas = j.vidas - 1
+                if vidas > 0:
+                    j=Jugador([0,ALTO-120])
+                    j.vidas = vidas
+                    j.plataformas = plataformas
+                    jugadores.add(j)
+                    mensaje = "no detendras mi furia!!!!"
+                else:
+                    mensaje = "Morire cuando muera!!! ...... mori T_T"
+                    fin_juego=True
+    for b in balas:
+        ls=pygame.sprite.spritecollide(b,enemigos1,False)
+        for e in ls:
+            balas.remove(b)
+            enemigo1.vidas-=1
+            if enemigo1.vidas == 0:
+                enemigos1.remove(enemigo1)
+                mensaje = "Mis hermanos te venceran kathmandu"
+        if b.rect.x < -20:
+            balas.remove(b)
+
+    for b in balasEnemigo1:
+        ls=pygame.sprite.spritecollide(b,jugadores,True)
+        if len(ls) != 0:
+            for jjugador in ls:
+                vidas = j.vidas - 1
+                if vidas > 0:
+                    j=Jugador([0,ALTO-120])
+                    j.vidas = vidas
+                    j.plataformas = plataformas
+                    jugadores.add(j)
+                    mensaje = "no detendras mi furia!!!!"
+                else:
+                    mensaje = "Morire cuando muera!!! ...... mori T_T"
+                    fin_juego=True
 
 def corte(archivo,an_i,al_i):
     imagen=pygame.image.load(archivo)
@@ -73,6 +172,7 @@ class Enemigo1(pygame.sprite.Sprite):
         self.vely = 4
         self.siguiente = "p"
         self.plataformas=None
+        self.vidas = 3
 
     def update(self):
         if self.siguiente == "p":
@@ -185,6 +285,7 @@ class Jugador (pygame.sprite.Sprite):
         self.rect.y += self.vely
         
 
+
         ls_col=pygame.sprite.spritecollide(self,self.plataformas,False)
         for p in ls_col:
             if self.rect.top < p.rect.bottom and self.vely < 0:
@@ -220,6 +321,7 @@ if __name__ == '__main__':
 
 
     balas = pygame.sprite.Group()
+    balasEnemigo1 = pygame.sprite.Group()
 
     j.plataformas=plataformas
 
@@ -231,43 +333,14 @@ if __name__ == '__main__':
 
     reloj=pygame.time.Clock()
     fin=False
+    fin_juego = False
     cont = 0
-    while not fin:
+
+    mensaje = ""
+
+    while not (fin or fin_juego):
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                fin=True
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RIGHT:
-                    j.siguiente = "d"
-                    j.velx=10
-                    j.vely=0
-                if event.key == pygame.K_LEFT:
-                    j.siguiente = "i"
-                    j.velx = -10
-                    j.vely=0
-                if event.key == pygame.K_UP:
-                    j.vely = -10
-                if event.key == pygame.K_SPACE:
-                    b=Bala([j.rect.x, j.rect.y])
-                    if j.siguiente == "i":
-                        b.velx = -4
-                    else:
-                        b.velx = 4
-                    j.bum.play()
-                    balas.add(b)
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_RIGHT:
-                    j.velx=0
-                    j.vely=0
-                if event.key == pygame.K_LEFT:
-                    j.velx=0
-                    j.vely=0
-                if event.key == pygame.K_UP:
-                    j.velx=0
-                    j.vely=0
-                if event.key == pygame.K_DOWN:
-                    j.velx=0
-                    j.vely=0
+            eventos(event)
 
         if j.rect.x <= (ANCHO-200) and j.rect.x >= 0:
             for p in plataformas:
@@ -281,17 +354,24 @@ if __name__ == '__main__':
                     b.velx = 4
                 else:
                     b.velx = -4
-                balas.add(b)
+                balasEnemigo1.add(b)
+
+        colisionBalasEnemigo1()
+
 
         velX = (j.velx/4)
         if (cont % 4) == 0:
             jugadores.update()
 
-        balas.update()
+        
 
         showInfinityBackground()
 
+        balas.update()
         balas.draw(pantalla)
+
+        balasEnemigo1.update()
+        balasEnemigo1.draw(pantalla)
 
         jugadores.draw(pantalla)
 
@@ -302,8 +382,24 @@ if __name__ == '__main__':
 
         enemigos1.draw(pantalla)
         
+        
+        mostrarMensajes()
+
         pygame.display.flip()
 
         cont+=1
         if cont == 120:
             cont = 0
+
+
+    ########### si fin del juego ############ 
+    pantalla.fill(NEGRO)
+    texto= pygame.font.Font(None, 50).render('Fin de juego', True, BLANCO)
+    pantalla.blit(texto, [(ANCHO/2-100),(ALTO/2-10)])
+    pygame.display.flip()
+    
+    fin=False
+    while not fin:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                fin=True
