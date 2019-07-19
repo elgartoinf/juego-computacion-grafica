@@ -1,1 +1,1 @@
-# juego-computaci-n-grafica
+# juego computacion grafica
