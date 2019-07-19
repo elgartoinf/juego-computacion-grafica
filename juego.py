@@ -210,20 +210,20 @@ def colisionBalasEnemigos():
                     fin_juego=True
 
 
-        for b in bosses:
-            ls=pygame.sprite.spritecollide(b,jugadores,True)
-            if len(ls) != 0:
-                for jjugador in ls:
-                    vidas = j.vidas - 1
-                    if vidas > 0:
-                        j=Jugador([0,ALTO-120])
-                        j.vidas = vidas
-                        j.plataformas = plataformas
-                        jugadores.add(j)
-                        mensaje = "no detendras mi furia!!!!"
-                    else:
-                        mensaje = "Morire cuando muera!!! ...... mori T_T"
-                        fin_juego=True
+    for b in bosses:
+        ls=pygame.sprite.spritecollide(b,jugadores,True)
+        if len(ls) != 0:
+            for jjugador in ls:
+                vidas = j.vidas - 1
+                if vidas > 0:
+                    j=Jugador([0,ALTO-120])
+                    j.vidas = vidas
+                    j.plataformas = plataformas
+                    jugadores.add(j)
+                    mensaje = "no detendras mi furia!!!!"
+                else:
+                    mensaje = "Morire cuando muera!!! ...... mori T_T"
+                    fin_juego=True
 
 def corte(archivo,an_i,al_i,scale=1):
     imagen=pygame.transform.scale(pygame.image.load(archivo), (pygame.image.load(archivo).get_width()*scale, pygame.image.load(archivo).get_height()*scale))
@@ -525,6 +525,9 @@ class Jugador (pygame.sprite.Sprite):
             self.vely += cte
 
     def update(self):
+        global mensaje
+        global fin_juego
+        
         if not self.poder:
             if self.siguiente == "d":
                 self.image = self.m[0][0][0+self.sig]
@@ -588,6 +591,12 @@ class Jugador (pygame.sprite.Sprite):
 
 
         self.gravedad()
+
+
+        if self.rect.y > ALTO:
+            self.vidas = 0
+            mensaje = "Me hundi!!!!! y mori!!"
+            fin_juego=True
 
 
 
@@ -719,19 +728,21 @@ if __name__ == '__main__':
 
             if not estanCerca(enemigo1,j,600):
                 enemigo1.rect.x+=-j.velx
+                enemigo1.rect.y = 0
 
             if not estanCerca(enemigo2,j,600):
                 enemigo2.rect.x+=-j.velx
+                enemigo2.rect.y = 0
 
             if not estanCerca(enemigo3,j,600):
                 enemigo3.rect.x+=-j.velx
+                enemigo3.rect.y = ALTO - 100
 
-            if not estanCerca(boss,j,600):
+            if not estanCerca(boss,j,300):
                 boss.rect.x+=-j.velx
 
 
             if estanCerca(enemigo1,j) and (cont % 80) == 0:
-                print("aparece 1")
                 if len(enemigos1) != 0:
                     b=Bala([enemigo1.rect.x, enemigo1.rect.y])
                     b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
@@ -744,7 +755,6 @@ if __name__ == '__main__':
                     balasEnemigo1.add(b)
 
             if estanCerca(enemigo2,j,600) and (cont % 80) == 0:
-                print("aparece 2")
                 if len(enemigos2) != 0:
                     b=Bala([enemigo2.rect.x, enemigo2.rect.y])
                     b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
@@ -759,7 +769,6 @@ if __name__ == '__main__':
 
 
             if estanCerca(enemigo3,j,600) and (cont % 80) == 0:
-                print("aparece 3")
                 if len(enemigos3) != 0:
                     b=Bala([enemigo3.rect.x, enemigo3.rect.y])
                     b.image = pygame.transform.scale(pygame.image.load('bullet_1.png'), (20, 20))
@@ -773,7 +782,7 @@ if __name__ == '__main__':
                     balasEnemigo1.add(b)
 
 
-            if estanCerca(boss,j,600) and (cont % 80) == 0:
+            if estanCerca(boss,j,300) and (cont % 80) == 0:
                 if not mensaje_boss:
                     mensaje = "Moriras devilucho"
                     mensaje_boss = True
